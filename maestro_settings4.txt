@@ -1,0 +1,84 @@
+<!--Pololu Maestro servo controller settings file, http://www.pololu.com/catalog/product/1350-->
+<UscSettings version="1">
+  <NeverSuspend>false</NeverSuspend>
+  <SerialMode>USB_DUAL_PORT</SerialMode>
+  <FixedBaudRate>9600</FixedBaudRate>
+  <SerialTimeout>0</SerialTimeout>
+  <EnableCrc>false</EnableCrc>
+  <SerialDeviceNumber>12</SerialDeviceNumber>
+  <SerialMiniSscOffset>0</SerialMiniSscOffset>
+  <Channels ServosAvailable="6" ServoPeriod="156">
+    <!--Period = 19.968 ms-->
+    <!--Channel 0-->
+    <Channel name="" mode="Servo" min="1984" max="6016" homemode="Goto" home="6016" speed="200" acceleration="10" neutral="3968" range="1905" />
+    <!--Channel 1-->
+    <Channel name="" mode="Servo" min="256" max="13120" homemode="Goto" home="6432" speed="608" acceleration="100" neutral="3968" range="1905" />
+    <!--Channel 2-->
+    <Channel name="" mode="Input" min="0" max="1024" homemode="Ignore" home="0" speed="0" acceleration="0" neutral="1024" range="1905" />
+    <!--Channel 3-->
+    <Channel name="" mode="Input" min="0" max="1024" homemode="Ignore" home="0" speed="0" acceleration="0" neutral="1024" range="1905" />
+    <!--Channel 4-->
+    <Channel name="" mode="Input" min="0" max="1024" homemode="Ignore" home="0" speed="0" acceleration="0" neutral="1024" range="1905" />
+    <!--Channel 5-->
+    <Channel name="" mode="Output" min="3968" max="8000" homemode="Ignore" home="3968" speed="0" acceleration="0" neutral="6000" range="1905" />
+  </Channels>
+  <Sequences />
+  <Script ScriptDone="false"># When the script is not doing anything else,
+# this loop will listen for button presses. When a button
+# is pressed it runs the corresponding sequence.
+#***********THIS ASSUMES********** Level Servo is on channel 1 AND FlapServo is on channel 0*************
+begin
+button_a if sequence_a endif
+button_b if sequence_b endif
+button_c if sequence_c endif
+repeat
+# These subroutines each return 1 if the corresponding
+# button is pressed, and return 0 otherwise.
+#button a on channel 2 us level 
+# These channels must be configured as Inputs in the
+# Channel Settings tab.
+sub button_a #add 100 if not at max level
+2 get_position 500 less_than
+return
+sub button_b #subtract 100 if not at min
+3 get_position 500 less_than
+return
+sub button_c
+4 get_position 500 less_than
+return
+#run these or corresponding buttons
+#button a level up
+sub sequence_a
+1 get_position 12900 less_than # make sure not already at max, if not add_100
+if add_100 endif
+return
+sub add_100
+1 get_position
+100 plus 1 servo #add 100
+return
+#button b level down
+sub sequence_b 
+1 get_position 300 greater_than #if not at min, subtract_100
+if subtract_100 endif
+return
+sub subtract_100
+1 get_position
+100 minus 1 servo #subtract 100
+return
+#button c flap toggle
+sub sequence_c  # check flat position if more than half way open toggle closed, if not toggle open
+0 get_position 6500 less_than
+if  close
+else
+0 get_position 6500 greater_than
+if open endif
+endif
+return
+sub open 
+4000 0 servo 1000 delay #put channel 0 servo at open angle(change number preceeding 0 to open angle)
+return
+sub close
+8000 0 servo 1000 delay # put channel 0 servo at closed angle(change number preceeding 0 to closed angle) 
+return 
+</Script>
+</UscSettings>
